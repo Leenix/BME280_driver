@@ -180,8 +180,10 @@ uint32_t BME280::get_calibrated_pressure(int32_t raw_pressure) {
     var1 = ((int32_t)calibration.t_fine >> 1) - 64000;
     var2 = (((var1 >> 2) * (var1 >> 2)) >> 11) * int32_t(calibration.P6) + ((var1 * int32_t(calibration.P5)) << 1);
     var2 = (var2 >> 2) + (int32_t(calibration.P4) << 16);
+
     var1 =
-        (((calibration.P3 * ((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3) + (((int32_t(calibration.P2) * var1) >> 1)) >> 18;
+        (((calibration.P3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3) + ((((int32_t)calibration.P2) * var1) >> 1)) >>
+        18;
     var1 = ((((32768 + var1)) * int32_t(calibration.P1)) >> 15);
 
     /* To avoid divide by zero exception */
@@ -224,3 +226,30 @@ float BME280::get_calibrated_humidity(int32_t raw_humidity) {
 }
 
 void BME280::set_temperature_offset(float offset) { calibration.temperature_offset = offset; }
+
+bme280_reading_t BME280::get_reading() {
+    bme280_raw_reading_t raw = get_raw_reading();
+    return calibrate_raw_reading(raw);
+}
+
+void BME280::start_single_reading() {
+    bme280_control_t control;
+    control.power_mode = BME280_POWER_MODE::BME280_FORCED_MODE;
+    write_config(control);
+}
+
+void BME280::write_config(bme280_config_t config) { write((uint8_t *)&config, BME280_REGISTER::CONFIG); }
+
+void BME280::write_config(bme280_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
+
+void BME280::write_config(bme280_humidity_control_t config) {
+    write((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY);
+}
+
+void BME280::reset() { write((uint8_t *)&RESET_CODE, BME280_REGISTER::RESET); }
+
+bme280_status_t BME280::get_status() {
+    bme280_status_t status;
+    read((uint8_t *)&status, BME280_REGISTER::STATUS);
+    return status;
+}

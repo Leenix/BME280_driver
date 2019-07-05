@@ -22,7 +22,7 @@ typedef struct {
 } bme280_reading_t;
 
 enum BME280_OVERSAMPLING_MODE {
-    BME280_OVERSAMPLING_SKIPPED = 0,
+    BME280_SENSOR_DISABLED = 0,
     BME280_OVERSAMPLING_x1 = 1,
     BME280_OVERSAMPLING_x2 = 2,
     BME280_OVERSAMPLING_x4 = 3,
@@ -30,12 +30,7 @@ enum BME280_OVERSAMPLING_MODE {
     BME280_OVERSAMPLING_x16 = 5
 };
 
-enum BME280_POWER_MODE {
-    BME280_SLEEP_MODE = 0,
-    BME280_FORCED_MODE = 1,
-    BME280_FORCED_MODE = 2,
-    BME280_NORMAL_MODE = 3
-};
+enum BME280_POWER_MODE { BME280_SLEEP_MODE = 0, BME280_FORCED_MODE = 1, BME280_NORMAL_MODE = 3 };
 
 enum BME280_STANDBY_TIME {
     BME280_STANDBY_TIME_500NS = 0,
@@ -59,10 +54,10 @@ enum BME280_FILTER_COEFFICIENT {
 typedef union {
     uint8_t raw;
     struct {
-        uint8_t oversampling_mode : 3;
+        uint8_t humidity_oversampling_mode : 3;
         uint8_t _reserved : 5;
     };
-} bme_humidity_control_t;
+} bme280_humidity_control_t;
 
 typedef union {
     uint8_t raw;
@@ -92,40 +87,20 @@ typedef union {
     };
 } bme280_config_t;
 
-typedef struct {
-    // Temperature calibration factors
-    uint16_t T1;
-    int16_t T2;
-    int16_t T3;
-    int32_t t_fine;
-    float temperature_offset = 0.0;
-
-    // Pressure calibration factors
-    uint16_t P1;
-    int16_t P2;
-    int16_t P3;
-    int16_t P4;
-    int16_t P5;
-    int16_t P6;
-    int16_t P7;
-    int16_t P8;
-    int16_t P9;
-
-    // Humidity calibration factors
-    uint8_t H1;
-    int16_t H2;
-    uint8_t H3;
-    int16_t H4;
-    int16_t H5;
-    int8_t H6;
-} bme280_calibration_t;
-
 class BME280 {
    public:
     bool begin(uint8_t comms_mode = BME280_I2C_MODE, uint8_t address_or_cs = DEFAULT_BME280_ADDRESS);
     bool comms_check();
+    void reset();
     void set_address(uint8_t address);
+    bme280_status_t get_status();
+    void start_single_reading();
+    bme280_reading_t get_reading();
+
     void set_temperature_offset(float offset);
+    void write_config(bme280_config_t config);
+    void write_config(bme280_control_t config);
+    void write_config(bme280_humidity_control_t config);
 
    private:
     typedef enum BME280_REGISTER {
@@ -152,6 +127,34 @@ class BME280 {
     } bme280_reg_t;
 
     enum BME280_DATA_LENGTH { CALIBRATION_TEMP_PRESS = 26, CALIBRATION_HUMIDITY = 7, RAW_READING = 8 };
+    typedef struct {
+        // Temperature calibration factors
+        uint16_t T1;
+        int16_t T2;
+        int16_t T3;
+        int32_t t_fine;
+        float temperature_offset = 0.0;
+
+        // Pressure calibration factors
+        uint16_t P1;
+        int16_t P2;
+        int16_t P3;
+        int16_t P4;
+        int16_t P5;
+        int16_t P6;
+        int16_t P7;
+        int16_t P8;
+        int16_t P9;
+
+        // Humidity calibration factors
+        uint8_t H1;
+        int16_t H2;
+        uint8_t H3;
+        int16_t H4;
+        int16_t H5;
+        int8_t H6;
+    } bme280_calibration_t;
+    const uint8_t RESET_CODE = 0xB6;
 
     bme280_calibration_t calibration;
     uint8_t _device_address;
@@ -172,7 +175,7 @@ class BME280 {
     bme280_reading_t calibrate_raw_reading(bme280_raw_reading_t raw);
     float get_calibrated_temperature(int32_t raw_temperature);
     uint32_t get_calibrated_pressure(int32_t raw_pressure);
-    float get_calibrated_humidity(int32_t raw_humidity)
+    float get_calibrated_humidity(int32_t raw_humidity);
 };
 
 #endif
