@@ -74,14 +74,14 @@ bool BME280::write_i2c(uint8_t *input, bme280_reg_t address, uint8_t length) {
  */
 bool BME280::read_i2c(uint8_t *output, bme280_reg_t address, uint8_t length) {
     bool result = true;
-    Wire.beginTransmission(address);
+    Wire.beginTransmission(_device_address);
     Wire.write(address);
     if (Wire.endTransmission() != 0)
         result = false;
 
     else  // OK, all worked, keep going
     {
-        Wire.requestFrom(address, length);
+        Wire.requestFrom(_device_address, length);
         for (size_t i = 0; (i < length) and Wire.available(); i++) {
             uint8_t c = Wire.read();
             output[i] = c;
