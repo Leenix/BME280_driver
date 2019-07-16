@@ -101,6 +101,9 @@ class BME280 {
     void write_config(bme280_config_t config);
     void write_config(bme280_control_t config);
     void write_config(bme280_humidity_control_t config);
+    void read_config(bme280_config_t& config);
+    void read_config(bme280_control_t& config);
+    void read_config(bme280_humidity_control_t& config);
 
    private:
     typedef enum BME280_REGISTER {

@@ -25,7 +25,7 @@ bme280_raw_reading_t BME280::get_raw_reading() {
     read(buffer, BME280_REGISTER::PRESSURE_HIGH, 8);
 
     bme280_raw_reading_t reading;
-    reading.pressure = (buffer[0] << 12) + (buffer[1] << 4) + (buffer[2] >> 4);
+    reading.pressure = uint32_t(buffer[0] << 12) | uint32_t(buffer[1] << 4) | (buffer[2] >> 4);
     reading.temperature = (buffer[3] << 12) + (buffer[4] << 4) + (buffer[5] >> 4);
     reading.humidity = (buffer[6] << 8) + buffer[7];
     return reading;
@@ -170,6 +170,7 @@ float BME280::get_calibrated_temperature(int32_t raw_temperature) {
 
     calibration.t_fine = var1 + var2;
     float output = ((calibration.t_fine * 5 + 128) >> 8) / 100.0 + calibration.temperature_offset;
+    return output;
 }
 
 uint32_t BME280::get_calibrated_pressure(int32_t raw_pressure) {
@@ -234,6 +235,7 @@ bme280_reading_t BME280::get_reading() {
 
 void BME280::start_single_reading() {
     bme280_control_t control;
+    read_config(control);
     control.power_mode = BME280_POWER_MODE::BME280_FORCED_MODE;
     write_config(control);
 }
@@ -244,6 +246,14 @@ void BME280::write_config(bme280_control_t config) { write((uint8_t *)&config, B
 
 void BME280::write_config(bme280_humidity_control_t config) {
     write((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY);
+}
+
+void BME280::read_config(bme280_config_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONFIG); }
+
+void BME280::read_config(bme280_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
+
+void BME280::read_config(bme280_humidity_control_t &config) {
+    read((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY);
 }
 
 void BME280::reset() { write((uint8_t *)&RESET_CODE, BME280_REGISTER::RESET); }
