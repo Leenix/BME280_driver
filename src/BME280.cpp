@@ -7,6 +7,7 @@ bool BME280::begin(uint8_t comms_mode, uint8_t address_or_cs) {
     bool success = comms_check();
 
     if (success) load_calibration();
+    return success;
 }
 
 bool BME280::comms_check() {
