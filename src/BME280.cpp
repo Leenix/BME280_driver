@@ -75,6 +75,8 @@ bool BME280::write_i2c(uint8_t *input, bme280_reg_t address, uint8_t length) {
  */
 bool BME280::read_i2c(uint8_t *output, bme280_reg_t address, uint8_t length) {
     bool result = true;
+    Wire.flush();
+    while (Wire.available()) Wire.read();
     Wire.beginTransmission(_device_address);
     Wire.write(address);
     if (Wire.endTransmission() != 0)
@@ -163,11 +165,7 @@ bme280_reading_t BME280::calibrate_raw_reading(bme280_raw_reading_t raw) {
 
 float BME280::get_calibrated_temperature(int32_t raw_temperature) {
     int64_t var1 = ((((raw_temperature >> 3) - ((int32_t)calibration.T1 << 1))) * ((int32_t)calibration.T2)) >> 11;
-    int64_t var2 = (((((raw_temperature >> 4) - ((int32_t)calibration.T1)) *
-                      ((raw_temperature >> 4) - ((int32_t)calibration.T1))) >>
-                     12) *
-                    ((int32_t)calibration.T3)) >>
-                   14;
+    int64_t var2 = (((((raw_temperature >> 4) - ((int32_t)calibration.T1)) * ((raw_temperature >> 4) - ((int32_t)calibration.T1))) >> 12) * ((int32_t)calibration.T3)) >> 14;
 
     calibration.t_fine = var1 + var2;
     float output = ((calibration.t_fine * 5 + 128) >> 8) / 100.0 + calibration.temperature_offset;
@@ -183,9 +181,7 @@ uint32_t BME280::get_calibrated_pressure(int32_t raw_pressure) {
     var2 = (((var1 >> 2) * (var1 >> 2)) >> 11) * int32_t(calibration.P6) + ((var1 * int32_t(calibration.P5)) << 1);
     var2 = (var2 >> 2) + (int32_t(calibration.P4) << 16);
 
-    var1 =
-        (((calibration.P3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3) + ((((int32_t)calibration.P2) * var1) >> 1)) >>
-        18;
+    var1 = (((calibration.P3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3) + ((((int32_t)calibration.P2) * var1) >> 1)) >> 18;
     var1 = ((((32768 + var1)) * int32_t(calibration.P1)) >> 15);
 
     /* To avoid divide by zero exception */
@@ -210,16 +206,8 @@ uint32_t BME280::get_calibrated_pressure(int32_t raw_pressure) {
 float BME280::get_calibrated_humidity(int32_t raw_humidity) {
     int32_t var1;
     var1 = (calibration.t_fine - ((int32_t)76800));
-    var1 = (((((raw_humidity << 14) - (((int32_t)calibration.H4) << 20) - (((int32_t)calibration.H5) * var1)) +
-              ((int32_t)16384)) >>
-             15) *
-            (((((((var1 * ((int32_t)calibration.H6)) >> 10) *
-                 (((var1 * ((int32_t)calibration.H3)) >> 11) + ((int32_t)32768))) >>
-                10) +
-               ((int32_t)2097152)) *
-                  ((int32_t)calibration.H2) +
-              8192) >>
-             14));
+    var1 = (((((raw_humidity << 14) - (((int32_t)calibration.H4) << 20) - (((int32_t)calibration.H5) * var1)) + ((int32_t)16384)) >> 15) *
+            (((((((var1 * ((int32_t)calibration.H6)) >> 10) * (((var1 * ((int32_t)calibration.H3)) >> 11) + ((int32_t)32768))) >> 10) + ((int32_t)2097152)) * ((int32_t)calibration.H2) + 8192) >> 14));
     var1 = (var1 - (((((var1 >> 15) * (var1 >> 15)) >> 7) * ((int32_t)calibration.H1)) >> 4));
     var1 = (var1 < 0 ? 0 : var1);
     var1 = (var1 > 419430400 ? 419430400 : var1);
@@ -245,17 +233,13 @@ void BME280::write_config(bme280_config_t config) { write((uint8_t *)&config, BM
 
 void BME280::write_config(bme280_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
 
-void BME280::write_config(bme280_humidity_control_t config) {
-    write((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY);
-}
+void BME280::write_config(bme280_humidity_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY); }
 
 void BME280::read_config(bme280_config_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONFIG); }
 
 void BME280::read_config(bme280_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
 
-void BME280::read_config(bme280_humidity_control_t &config) {
-    read((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY);
-}
+void BME280::read_config(bme280_humidity_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY); }
 
 void BME280::reset() { write((uint8_t *)&RESET_CODE, BME280_REGISTER::RESET); }
 
