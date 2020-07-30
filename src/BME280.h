@@ -43,13 +43,7 @@ enum BME280_STANDBY_TIME {
     BME280_STANDBY_TIME_20MS = 7
 };
 
-enum BME280_FILTER_COEFFICIENT {
-    BME280_FILTER_OFF = 0,
-    BME280_FILTER_COEFFICIENT_2 = 1,
-    BME280_FILTER_COEFFICIENT_4 = 2,
-    BME280_FILTER_COEFFICIENT_8 = 3,
-    BME280_FILTER_COEFFICIENT_16 = 4
-};
+enum BME280_FILTER_COEFFICIENT { BME280_FILTER_OFF = 0, BME280_FILTER_COEFFICIENT_2 = 1, BME280_FILTER_COEFFICIENT_4 = 2, BME280_FILTER_COEFFICIENT_8 = 3, BME280_FILTER_COEFFICIENT_16 = 4 };
 
 typedef union {
     uint8_t raw;
@@ -98,12 +92,12 @@ class BME280 {
     bme280_reading_t get_reading();
 
     void set_temperature_offset(float offset);
-    void write_config(bme280_config_t config);
-    void write_config(bme280_control_t config);
-    void write_config(bme280_humidity_control_t config);
-    void read_config(bme280_config_t& config);
-    void read_config(bme280_control_t& config);
-    void read_config(bme280_humidity_control_t& config);
+    void write(bme280_config_t config);
+    void write(bme280_control_t config);
+    void write(bme280_humidity_control_t config);
+    void read(bme280_config_t& config);
+    void read(bme280_control_t& config);
+    void read(bme280_humidity_control_t& config);
 
    private:
     typedef enum BME280_REGISTER {
@@ -113,10 +107,10 @@ class BME280 {
         STATUS = 0xF3,            // Indicates if the device is measuring or copying from its memory image
         CONTROL_MEASURE = 0xF4,   // Temperature and pressure acquisition options.
         POWER_CONTROL = 0xF4,     // Temperature and pressure acquisition options.
-        CONFIG = 0xF5,         // Rate, filter, and interface options. May be ignored in normal mode, but not in sleep.
-        PRESSURE_HIGH = 0XF7,  // Pressure data - high byte [19:12]
-        PRESSURE_MID = 0XF8,   // Pressure data - mid byte [11:4]
-        PRESSURE_LOW = 0XF9,   // Pressure data - low byte [3:0]
+        CONFIG = 0xF5,            // Rate, filter, and interface options. May be ignored in normal mode, but not in sleep.
+        PRESSURE_HIGH = 0XF7,     // Pressure data - high byte [19:12]
+        PRESSURE_MID = 0XF8,      // Pressure data - mid byte [11:4]
+        PRESSURE_LOW = 0XF9,      // Pressure data - low byte [3:0]
         TEMPERATURE_HIGH = 0XFA,  // Temperature data - high byte [19:12]
         TEMPERATURE_MID = 0XFB,   // Temperature data - mid byte [11:4]
         TEMPERATURE_LOW = 0XFC,   // Temperature data - low byte [3:0]

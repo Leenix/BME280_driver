@@ -224,22 +224,22 @@ bme280_reading_t BME280::get_reading() {
 
 void BME280::start_single_reading() {
     bme280_control_t control;
-    read_config(control);
+    read(control);
     control.power_mode = BME280_POWER_MODE::BME280_FORCED_MODE;
-    write_config(control);
+    write(control);
 }
 
-void BME280::write_config(bme280_config_t config) { write((uint8_t *)&config, BME280_REGISTER::CONFIG); }
+void BME280::write(bme280_config_t config) { write((uint8_t *)&config, BME280_REGISTER::CONFIG); }
 
-void BME280::write_config(bme280_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
+void BME280::write(bme280_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
 
-void BME280::write_config(bme280_humidity_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY); }
+void BME280::write(bme280_humidity_control_t config) { write((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY); }
 
-void BME280::read_config(bme280_config_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONFIG); }
+void BME280::read(bme280_config_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONFIG); }
 
-void BME280::read_config(bme280_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
+void BME280::read(bme280_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_MEASURE); }
 
-void BME280::read_config(bme280_humidity_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY); }
+void BME280::read(bme280_humidity_control_t &config) { read((uint8_t *)&config, BME280_REGISTER::CONTROL_HUMIDITY); }
 
 void BME280::reset() { write((uint8_t *)&RESET_CODE, BME280_REGISTER::RESET); }
 
